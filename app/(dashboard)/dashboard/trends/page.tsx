@@ -1,5 +1,4 @@
 'use client';
-// Force dynamic rendering - this page requires authenticationexport const dynamic = 'force-dynamic';export const revalidate = 0;
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';

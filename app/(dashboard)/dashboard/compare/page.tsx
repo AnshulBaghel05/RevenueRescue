@@ -3,10 +3,6 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
-
-// Force dynamic rendering - this page requires authentication and real-time data
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 import Card from '@/components/shared/Card';
 import Badge from '@/components/shared/Badge';
 import Loader from '@/components/shared/Loader';
