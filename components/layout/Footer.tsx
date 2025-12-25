@@ -43,23 +43,18 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">Product</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#features" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/#features" className="text-gray-400 hover:text-white transition-colors">
                   Features
                 </a>
               </li>
               <li>
-                <a href="#pricing" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/pricing" className="text-gray-400 hover:text-white transition-colors">
                   Pricing
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/case-studies" className="text-gray-400 hover:text-white transition-colors">
                   Case Studies
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                  Roadmap
                 </a>
               </li>
             </ul>
@@ -70,22 +65,17 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">Company</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/about" className="text-gray-400 hover:text-white transition-colors">
                   About Us
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/blog" className="text-gray-400 hover:text-white transition-colors">
                   Blog
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                  Careers
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/contact" className="text-gray-400 hover:text-white transition-colors">
                   Contact
                 </a>
               </li>
@@ -97,22 +87,22 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">Legal</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/privacy" className="text-gray-400 hover:text-white transition-colors">
                   Privacy Policy
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/terms" className="text-gray-400 hover:text-white transition-colors">
                   Terms of Service
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/cookies" className="text-gray-400 hover:text-white transition-colors">
                   Cookie Policy
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/gdpr" className="text-gray-400 hover:text-white transition-colors">
                   GDPR
                 </a>
               </li>
@@ -126,13 +116,13 @@ export default function Footer() {
             © {currentYear} RevenueRescue. All rights reserved.
           </p>
           <div className="flex items-center space-x-6 text-sm">
-            <a href="#" className="text-gray-400 hover:text-white transition-colors">
+            <a href="/status" className="text-gray-400 hover:text-white transition-colors">
               Status
             </a>
-            <a href="#" className="text-gray-400 hover:text-white transition-colors">
+            <a href="/docs" className="text-gray-400 hover:text-white transition-colors">
               Documentation
             </a>
-            <a href="#" className="text-gray-400 hover:text-white transition-colors">
+            <a href="/api-info" className="text-gray-400 hover:text-white transition-colors">
               API
             </a>
           </div>

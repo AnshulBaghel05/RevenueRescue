@@ -269,6 +269,11 @@ export default function SettingsPage() {
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">
                 Company Name
+                {profile.subscription_tier === 'pro' && (
+                  <Badge variant="success" size="sm" className="ml-2">
+                    Pro Feature
+                  </Badge>
+                )}
               </label>
               <input
                 type="text"
@@ -277,6 +282,16 @@ export default function SettingsPage() {
                 placeholder="Enter your company name (optional)"
                 className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary"
               />
+              {profile.subscription_tier === 'pro' && (
+                <p className="text-xs text-green-400 mt-1">
+                  ✓ Your company name will appear on PDF reports instead of "RevenueRescue"
+                </p>
+              )}
+              {profile.subscription_tier !== 'pro' && companyName && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Custom branding on PDF reports is available for Pro users
+                </p>
+              )}
             </div>
 
             {/* Save Button */}
@@ -309,6 +324,50 @@ export default function SettingsPage() {
             </div>
           </form>
         </Card>
+
+        {/* Subscription Management */}
+        {(profile.subscription_tier === 'starter' || profile.subscription_tier === 'pro') && (
+          <Card className="mt-6 border-yellow-500/30">
+            <h2 className="text-xl font-bold text-yellow-400 mb-4">Subscription Management</h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-yellow-500/10 rounded-lg">
+                <div>
+                  <h3 className="font-semibold text-white mb-1">Cancel Subscription</h3>
+                  <p className="text-sm text-gray-400">
+                    Your subscription will remain active until the end of your billing period
+                  </p>
+                </div>
+                <button
+                  onClick={async () => {
+                    if (confirm('Are you sure you want to cancel your subscription?')) {
+                      setSaving(true);
+                      try {
+                        const response = await fetch('/api/payments/cancel', {
+                          method: 'POST',
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                          setMessage({ type: 'success', text: 'Subscription cancelled successfully. Access until ' + new Date(data.cancelsAt).toLocaleDateString() });
+                          await fetchProfile();
+                        } else {
+                          throw new Error(data.error);
+                        }
+                      } catch (error) {
+                        setMessage({ type: 'error', text: 'Failed to cancel subscription' });
+                      } finally {
+                        setSaving(false);
+                      }
+                    }
+                  }}
+                  disabled={saving}
+                  className="px-6 py-3 border-2 border-yellow-500 text-yellow-400 hover:bg-yellow-500 hover:text-white font-semibold rounded-lg transition-colors whitespace-nowrap disabled:opacity-50"
+                >
+                  Cancel Subscription
+                </button>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Danger Zone */}
         <Card className="mt-6 border-red-500/30">

@@ -22,6 +22,8 @@ export default function AuditResultPage({ params }: PageProps) {
   const [audit, setAudit] = useState<AuditResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [subscriptionTier, setSubscriptionTier] = useState<string>('free');
 
   useEffect(() => {
     async function fetchAudit() {
@@ -71,7 +73,57 @@ export default function AuditResultPage({ params }: PageProps) {
     }
 
     fetchAudit();
+    checkSubscriptionTier();
   }, [resolvedParams.id]);
+
+  const checkSubscriptionTier = async () => {
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const supabase = createClient();
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_tier')
+        .eq('id', user.id)
+        .single();
+
+      if (profile) {
+        setSubscriptionTier(profile.subscription_tier);
+      }
+    } catch (error) {
+      console.error('Error fetching subscription tier:', error);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    try {
+      setDownloadingPdf(true);
+      const response = await fetch(`/api/pdf/generate?auditId=${resolvedParams.id}`);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `audit-${audit?.storeUrl.replace(/https?:\/\//, '').replace(/[^a-z0-9]/gi, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('PDF download error:', error);
+      alert(error instanceof Error ? error.message : 'Failed to download PDF');
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -125,14 +177,48 @@ export default function AuditResultPage({ params }: PageProps) {
                 <span>Audit Results</span>
               </div>
 
-              {/* Store Info */}
-              <div className="mb-6">
-                <h1 className="text-4xl font-bold text-white mb-2">Audit Results</h1>
-                <div className="flex items-center gap-4 text-gray-400">
-                  <span className="font-mono">{audit.storeUrl}</span>
-                  <span>•</span>
-                  <span>{new Date(audit.createdAt).toLocaleDateString()}</span>
+              {/* Store Info & Actions */}
+              <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <h1 className="text-4xl font-bold text-white mb-2">Audit Results</h1>
+                  <div className="flex items-center gap-4 text-gray-400">
+                    <span className="font-mono">{audit.storeUrl}</span>
+                    <span>•</span>
+                    <span>{new Date(audit.createdAt).toLocaleDateString()}</span>
+                  </div>
                 </div>
+                {/* PDF Download Button - Only for Starter & Pro users */}
+                {(subscriptionTier === 'starter' || subscriptionTier === 'pro') ? (
+                  <button
+                    onClick={handleDownloadPdf}
+                    disabled={downloadingPdf}
+                    className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-light text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {downloadingPdf ? (
+                      <>
+                        <Loader size="sm" />
+                        <span>Generating PDF...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>Download PDF Report</span>
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => router.push('/pricing')}
+                    className="flex items-center gap-2 px-6 py-3 border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold rounded-lg transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <span>Upgrade for PDF Export</span>
+                  </button>
+                )}
               </div>
 
               {/* Overall Score */}

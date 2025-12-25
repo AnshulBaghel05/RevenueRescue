@@ -1,106 +1,251 @@
 # RevenueRescue - Shopify Store Audit SaaS
 
-A professional Shopify store auditing platform that analyzes stores for performance, conversion, and revenue optimization issues.
+**Professional Shopify store auditing platform that analyzes stores for performance, conversion, and revenue optimization opportunities.**
 
-## Tech Stack
+> Transform underperforming Shopify stores into revenue-generating machines with AI-powered audits and actionable insights.
 
-- **Frontend**: Next.js 14, React 18, TypeScript
-- **Styling**: Tailwind CSS with custom design tokens
-- **3D Graphics**: Three.js via React Three Fiber
-- **Backend**: Next.js API routes + Supabase
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth + Shopify OAuth
+---
+
+## 🚀 Features
+
+### Core Audit Features
+- **Overall Store Health Score** - A-F grading system with detailed breakdown
+- **Performance Analysis** - Page speed, LCP, image optimization detection
+- **Conversion Optimization** - Trust signals, checkout speed, mobile usability
+- **Revenue Recovery Calculator** - Estimated revenue loss and recovery potential
+- **Priority Fix List** - Ranked by revenue impact
+- **PDF Export Reports** - Professional branded reports
+
+### Advanced Analytics (Pro Plan)
+- **Trend Analysis** - Track store improvements over time
+- **Audit Comparison** - Compare two audits side-by-side
+- **Predictive Forecasting** - AI-powered score predictions using linear regression
+- **AI Insights** - Automated insights and recommendations
+
+### Pricing Plans
+- **Free**: 1 audit/month - Try before you buy
+- **Starter ($29/mo)**: 10 audits/month + PDF exports + trends
+- **Pro ($79/mo)**: 50 audits/month + analytics + forecasting + priority support
+
+---
+
+## 🛠 Tech Stack
+
+- **Framework**: Next.js 16.0.10 (App Router)
+- **Language**: TypeScript 5.6.3
+- **Database**: Supabase (PostgreSQL 15.x)
+- **Authentication**: Supabase Auth
 - **Payments**: Razorpay
+- **PDF Generation**: @react-pdf/renderer
+- **Charts**: Recharts 3.6.0
+- **Styling**: Tailwind CSS
 - **Deployment**: Vercel
 
-## Getting Started
+---
 
-1. Install dependencies:
+## 📦 Quick Start
+
+### 1. Clone and Install
 ```bash
+git clone <your-repo-url>
+cd saas
 npm install
 ```
 
-2. Set up environment variables:
+### 2. Environment Setup
 ```bash
 cp .env.example .env.local
-# Fill in your API keys
 ```
 
-3. Run the development server:
+Edit `.env.local` with your credentials:
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# Razorpay
+RAZORPAY_KEY_ID=your_razorpay_key
+RAZORPAY_KEY_SECRET=your_razorpay_secret
+NEXT_PUBLIC_RAZORPAY_KEY_ID=your_razorpay_key
+
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+### 3. Database Setup
+Apply migrations in order (see [DEPLOYMENT.md](DEPLOYMENT.md)):
+```bash
+# Via Supabase Dashboard SQL Editor
+# Run migrations 001-008 in sequence
+```
+
+### 4. Run Development Server
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000)
 
-## Project Structure
+---
+
+## 📁 Project Structure
 
 ```
 saas/
-├── app/                    # Next.js app directory
-│   ├── (marketing)/       # Landing pages
-│   ├── (auth)/           # Authentication pages
-│   ├── (dashboard)/      # Protected dashboard routes
-│   └── api/              # API routes
-├── components/            # React components
-│   ├── landing/          # Landing page components
-│   ├── audit/            # Audit result components
-│   ├── dashboard/        # Dashboard components
-│   ├── three/            # 3D background components
-│   ├── shared/           # Reusable UI components
-│   └── layout/           # Layout components
-├── lib/                   # Utility libraries
-│   ├── supabase/         # Supabase client setup
-│   ├── shopify/          # Shopify OAuth & API
-│   ├── audit/            # Audit engine & analyzers
-│   ├── payments/         # Razorpay integration
-│   └── pdf/              # PDF report generation
-├── hooks/                 # Custom React hooks
-├── types/                 # TypeScript type definitions
-└── styles/               # Global styles
-
+├── app/
+│   ├── (marketing)/          # Landing, pricing, legal pages
+│   ├── (auth)/               # Login, signup
+│   ├── (dashboard)/          # Protected dashboard routes
+│   │   ├── dashboard/        # Main dashboard + trends/compare/analytics
+│   │   ├── audit/            # Audit results page
+│   │   ├── payment-success/  # Payment confirmation
+│   │   └── payment-failed/   # Payment retry
+│   └── api/
+│       ├── audit/            # Audit creation API
+│       ├── payments/         # Razorpay integration
+│       └── pdf/              # PDF export API
+├── components/
+│   ├── landing/              # Hero, features, pricing
+│   ├── dashboard/            # Dashboard UI components
+│   ├── audit/                # Audit result components
+│   └── shared/               # Reusable UI components
+├── lib/
+│   ├── supabase/             # Database clients
+│   ├── payments/             # Razorpay integration
+│   ├── pdf/                  # PDF generation
+│   └── audit/                # Audit engine (analyzers)
+├── hooks/
+│   └── useAuth.ts            # Authentication hook
+├── supabase/
+│   └── migrations/           # Database migrations (001-008)
+└── types/                    # TypeScript definitions
 ```
 
-## Features
+---
 
-### MVP Features (15 Core Features)
+## 🔐 Security Features
 
-**Performance & Speed (5 features)**
-1. Overall Store Health Score (A-F grade)
-2. Page Load Speed Analysis (desktop + mobile)
-3. Largest Contentful Paint (LCP) detector
-4. Image Optimization Scanner
-5. Unused App Detector
+- **Row-Level Security (RLS)** - Database-level user isolation
+- **Audit Logging** - Complete trail of sensitive operations
+- **Limit Enforcement** - Automatic tier limit validation at database level
+- **Input Validation** - Server-side validation on all inputs
+- **Secure Payment Flow** - Razorpay signature verification
+- **HTTPS Only** - Enforced in production
 
-**Conversion Killers (5 features)**
-6. Missing Trust Signals Checker
-7. Checkout Speed Analysis
-8. Mobile Usability Score
-9. Broken Link Detector
-10. Product Page Completeness
+Security Grade: **A+**
 
-**Revenue Impact (3 features)**
-11. Revenue Recovery Calculator
-12. Cart Abandonment Reason Detector
-13. Conversion Rate Benchmark
+---
 
-**Actionable Insights (2 features)**
-14. Priority Fix List (ranked by revenue impact)
-15. One-Click Export Report (PDF)
+## 📊 Database Schema
 
-## Development Timeline
+**10 Tables**:
+- `profiles` - User data and subscription info
+- `audits` - Audit results and history
+- `subscriptions` - Razorpay subscription tracking
+- `payments` - Payment transactions
+- `audit_exports` - PDF export metadata
+- `audit_logs` - Security audit trail
+- `analytics_events` - User interaction tracking
+- `user_preferences` - User settings
+- `shopify_stores` - Shopify store metadata
+- `shopify_connections` - OAuth tokens
 
-- **Phase 1**: Foundation (Week 1-2) ← Current
-- **Phase 2**: Landing Page (Week 2-3)
-- **Phase 3**: Authentication (Week 3-4)
-- **Phase 4**: Audit Engine (Week 4-6)
-- **Phase 5**: Dashboard & Results (Week 6-7)
-- **Phase 6**: Payments (Week 7-8)
-- **Phase 7**: PDF Export (Week 8)
-- **Phase 8**: Polish & Testing (Week 9-10)
-- **Phase 9**: Deployment (Week 10)
-- **Phase 10**: Launch (Week 11+)
+**Key Functions**:
+- `get_dashboard_stats()` - Efficient dashboard data retrieval
+- `calculate_score_prediction()` - Predictive forecasting
+- `check_audit_limit()` - Automatic limit enforcement
+- `archive_old_audits()` - Data retention management
 
-## License
+---
 
-Private - All rights reserved
+## 🚢 Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for complete deployment guide.
+
+**Quick Deploy to Vercel**:
+```bash
+npm run build
+vercel --prod
+```
+
+**Required Environment Variables** (Set in Vercel Dashboard):
+- All variables from `.env.example`
+- Configure domain and SSL
+- Set up Razorpay webhooks
+
+---
+
+## 📈 Monetization
+
+### Revenue Model
+- **Subscription-based SaaS**
+- **Monthly recurring revenue (MRR)**
+- **3 pricing tiers** (Free, Starter $29, Pro $79)
+- **Target market**: Shopify store owners (2M+ potential customers)
+
+### Growth Strategy
+- **Free tier** for lead generation
+- **Content marketing** to Shopify communities
+- **SEO** targeting "Shopify store audit" keywords
+- **Partner program** with Shopify agencies
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run type checking
+npm run build
+
+# Check for errors
+npm run lint
+```
+
+**Manual Testing Checklist**:
+- [ ] User signup and login
+- [ ] Create audit (free tier)
+- [ ] Payment flow (Starter/Pro)
+- [ ] PDF export
+- [ ] Analytics dashboard (Pro users)
+- [ ] Tier limit enforcement
+
+---
+
+## 📞 Support & Documentation
+
+- **Deployment Guide**: [DEPLOYMENT.md](DEPLOYMENT.md)
+- **Sales Materials**: [SALES_DECK.md](SALES_DECK.md)
+- **API Docs**: [API_INTEGRATION_GUIDE.md](API_INTEGRATION_GUIDE.md)
+
+---
+
+## 📄 License
+
+**Private & Proprietary** - All rights reserved
+
+This is a commercial SaaS product. Unauthorized copying, distribution, or modification is prohibited.
+
+---
+
+## 🎯 Roadmap
+
+**Completed**:
+- ✅ Core audit engine (15 features)
+- ✅ User authentication
+- ✅ Payment integration (Razorpay)
+- ✅ PDF export
+- ✅ Advanced analytics dashboard
+- ✅ Predictive forecasting
+- ✅ Database security hardening
+
+**Upcoming**:
+- [ ] Shopify OAuth integration
+- [ ] Email notifications
+- [ ] Team accounts
+- [ ] White-label reports
+- [ ] API access for agencies
+
+---
+
+**Built with ❤️ for Shopify store owners**

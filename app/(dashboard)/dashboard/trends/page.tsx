@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import Card from '@/components/shared/Card';
+import Badge from '@/components/shared/Badge';
 import Loader from '@/components/shared/Loader';
 import TrendChart, { DataPoint } from '@/components/dashboard/TrendChart';
 import { useAuth } from '@/hooks/useAuth';
@@ -28,6 +29,7 @@ export default function TrendsPage() {
   const [audits, setAudits] = useState<AuditRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStore, setSelectedStore] = useState<string>('all');
+  const [subscriptionTier, setSubscriptionTier] = useState<string>('free');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -36,9 +38,27 @@ export default function TrendsPage() {
     }
 
     if (user) {
+      checkSubscriptionTier();
       fetchAudits();
     }
   }, [user, authLoading, router]);
+
+  const checkSubscriptionTier = async () => {
+    try {
+      const supabase = createClient();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_tier')
+        .eq('id', user!.id)
+        .single();
+
+      if (profile) {
+        setSubscriptionTier(profile.subscription_tier);
+      }
+    } catch (error) {
+      console.error('Error fetching subscription tier:', error);
+    }
+  };
 
   const fetchAudits = async () => {
     try {
@@ -98,6 +118,48 @@ export default function TrendsPage() {
             <Loader size="lg" />
             <p className="text-gray-400 mt-4">Loading trends...</p>
           </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Tier gate: Trends is only available for Starter and Pro users
+  if (subscriptionTier === 'free') {
+    return (
+      <DashboardLayout>
+        <div className="max-w-4xl mx-auto">
+          <Card className="text-center py-12 border-primary/30">
+            <div className="text-6xl mb-4">📈</div>
+            <h3 className="text-2xl font-bold text-white mb-2">Trend Analysis</h3>
+            <p className="text-gray-400 mb-6 max-w-2xl mx-auto">
+              Track your store's performance improvements over time with detailed trend charts
+              and insights. See how your scores change across multiple audits and identify patterns.
+            </p>
+            <div className="bg-primary/10 border border-primary/30 rounded-lg p-6 mb-6 max-w-md mx-auto">
+              <h4 className="font-semibold text-white mb-3">Trend Analysis Includes:</h4>
+              <ul className="text-sm text-gray-300 space-y-2 text-left">
+                <li>✓ Overall score trends over time</li>
+                <li>✓ Performance & conversion tracking</li>
+                <li>✓ Revenue impact analysis</li>
+                <li>✓ Multi-store comparison</li>
+                <li>✓ Automated insights & recommendations</li>
+              </ul>
+            </div>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => router.push('/pricing')}
+                className="px-8 py-4 bg-gradient-to-r from-primary to-secondary hover:from-primary-light hover:to-secondary-light text-white font-semibold rounded-lg transition-all shadow-lg hover:shadow-glow-primary"
+              >
+                Upgrade to Starter ($29/mo)
+              </button>
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="px-8 py-4 border border-gray-600 text-gray-300 hover:bg-gray-700 font-semibold rounded-lg transition-colors"
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </Card>
         </div>
       </DashboardLayout>
     );

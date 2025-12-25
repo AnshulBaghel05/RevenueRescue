@@ -19,6 +19,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Audit History', href: '/dashboard/history', icon: '📋' },
     { name: 'Trends', href: '/dashboard/trends', icon: '📈' },
     { name: 'Compare', href: '/dashboard/compare', icon: '⚖️' },
+    { name: 'Analytics', href: '/dashboard/analytics', icon: '🔬', badge: 'Pro' },
     { name: 'New Audit', href: '/dashboard/new', icon: '➕' },
     { name: 'Settings', href: '/dashboard/settings', icon: '⚙️' },
   ];
@@ -73,7 +74,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 }`}
               >
                 <span className="text-xl">{item.icon}</span>
-                <span className="font-medium">{item.name}</span>
+                <span className="font-medium flex-1">{item.name}</span>
+                {item.badge && (
+                  <span className="px-2 py-0.5 text-xs font-semibold bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full">
+                    {item.badge}
+                  </span>
+                )}
               </Link>
             ))}
           </nav>

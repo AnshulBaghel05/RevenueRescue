@@ -32,6 +32,7 @@ function ComparePageContent() {
   const [selectedAudit1, setSelectedAudit1] = useState<string>('');
   const [selectedAudit2, setSelectedAudit2] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [subscriptionTier, setSubscriptionTier] = useState<string>('free');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -40,9 +41,27 @@ function ComparePageContent() {
     }
 
     if (user) {
+      checkSubscriptionTier();
       fetchAudits();
     }
   }, [user, authLoading, router]);
+
+  const checkSubscriptionTier = async () => {
+    try {
+      const supabase = createClient();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_tier')
+        .eq('id', user!.id)
+        .single();
+
+      if (profile) {
+        setSubscriptionTier(profile.subscription_tier);
+      }
+    } catch (error) {
+      console.error('Error fetching subscription tier:', error);
+    }
+  };
 
   useEffect(() => {
     // Get audit IDs from URL params if provided
@@ -111,6 +130,48 @@ function ComparePageContent() {
             <Loader size="lg" />
             <p className="text-gray-400 mt-4">Loading audits...</p>
           </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Tier gate: Compare is only available for Starter and Pro users
+  if (subscriptionTier === 'free') {
+    return (
+      <DashboardLayout>
+        <div className="max-w-4xl mx-auto">
+          <Card className="text-center py-12 border-primary/30">
+            <div className="text-6xl mb-4">⚖️</div>
+            <h3 className="text-2xl font-bold text-white mb-2">Compare Audits</h3>
+            <p className="text-gray-400 mb-6 max-w-2xl mx-auto">
+              Compare two audits side-by-side to track improvements, identify regressions,
+              and see exactly what changed between different optimization efforts.
+            </p>
+            <div className="bg-primary/10 border border-primary/30 rounded-lg p-6 mb-6 max-w-md mx-auto">
+              <h4 className="font-semibold text-white mb-3">Compare Feature Includes:</h4>
+              <ul className="text-sm text-gray-300 space-y-2 text-left">
+                <li>✓ Side-by-side score comparison</li>
+                <li>✓ Performance & conversion deltas</li>
+                <li>✓ Revenue impact changes</li>
+                <li>✓ Visual difference indicators</li>
+                <li>✓ Improvement/regression highlights</li>
+              </ul>
+            </div>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => router.push('/pricing')}
+                className="px-8 py-4 bg-gradient-to-r from-primary to-secondary hover:from-primary-light hover:to-secondary-light text-white font-semibold rounded-lg transition-all shadow-lg hover:shadow-glow-primary"
+              >
+                Upgrade to Starter ($29/mo)
+              </button>
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="px-8 py-4 border border-gray-600 text-gray-300 hover:bg-gray-700 font-semibold rounded-lg transition-colors"
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </Card>
         </div>
       </DashboardLayout>
     );
