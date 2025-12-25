@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { renderToBuffer } from '@react-pdf/renderer';
 import { AuditReportTemplate } from '@/lib/pdf/AuditReportTemplate';
 import type { AuditResult } from '@/lib/audit/types';
+import { createElement } from 'react';
 
 export const dynamic = 'force-dynamic';
 
@@ -213,7 +214,7 @@ export async function POST(request: NextRequest) {
 
     // Generate PDF buffer
     const pdfBuffer = await renderToBuffer(
-      <AuditReportTemplate audit={audit} customBranding={customBranding} />
+      createElement(AuditReportTemplate, { audit, customBranding }) as any
     );
 
     // TODO: Integrate with email service

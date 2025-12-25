@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { renderToStream } from '@react-pdf/renderer';
 import { AuditReportTemplate } from '@/lib/pdf/AuditReportTemplate';
 import type { AuditResult } from '@/lib/audit/types';
+import { createElement } from 'react';
 
 export const dynamic = 'force-dynamic';
 
@@ -188,7 +189,7 @@ export async function GET(request: NextRequest) {
 
     // Generate PDF using react-pdf
     const stream = await renderToStream(
-      <AuditReportTemplate audit={audit} customBranding={customBranding} />
+      createElement(AuditReportTemplate, { audit, customBranding }) as any
     );
 
     // Convert stream to buffer
