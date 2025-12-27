@@ -2,8 +2,7 @@
 
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
+import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import ScoreCard from '@/components/audit/ScoreCard';
 import IssueCard from '@/components/audit/IssueCard';
 import RecommendationCard from '@/components/audit/RecommendationCard';
@@ -127,45 +126,40 @@ export default function AuditResultPage({ params }: PageProps) {
 
   if (loading) {
     return (
-      <>
-        <Header />
-        <main className="min-h-screen pt-20 flex items-center justify-center">
+      <DashboardLayout>
+        <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <Loader size="lg" />
             <p className="text-gray-400 mt-4">Loading audit results...</p>
           </div>
-        </main>
-        <Footer />
-      </>
+        </div>
+      </DashboardLayout>
     );
   }
 
   if (error || !audit) {
     return (
-      <>
-        <Header />
-        <main className="min-h-screen pt-20 flex items-center justify-center">
+      <DashboardLayout>
+        <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <div className="text-6xl mb-4">⚠️</div>
             <h1 className="text-2xl font-bold text-white mb-2">Audit Not Found</h1>
             <p className="text-gray-400 mb-6">{error || 'Unable to load audit results'}</p>
             <button
-              onClick={() => router.push('/')}
+              onClick={() => router.push('/dashboard')}
               className="px-6 py-3 bg-primary hover:bg-primary-light text-white font-semibold rounded-lg transition-colors"
             >
-              Go Home
+              Go to Dashboard
             </button>
           </div>
-        </main>
-        <Footer />
-      </>
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <>
-      <Header />
-      <main className="pt-20 pb-20">
+    <DashboardLayout>
+      <main className="pb-20">
         {/* Hero Section */}
         <section className="py-12 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
           <div className="container mx-auto px-4">
@@ -387,7 +381,6 @@ export default function AuditResultPage({ params }: PageProps) {
           </div>
         </section>
       </main>
-      <Footer />
-    </>
+    </DashboardLayout>
   );
 }

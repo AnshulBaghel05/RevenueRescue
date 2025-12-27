@@ -20,6 +20,16 @@ interface Profile {
   created_at: string;
 }
 
+interface ScheduledAudit {
+  id: string;
+  store_url: string;
+  frequency: 'daily' | 'weekly' | 'monthly';
+  is_active: boolean;
+  last_run_at: string | null;
+  next_run_at: string;
+  created_at: string;
+}
+
 export default function SettingsPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -31,6 +41,12 @@ export default function SettingsPage() {
   // Form state
   const [fullName, setFullName] = useState('');
   const [companyName, setCompanyName] = useState('');
+
+  // Scheduled audits state
+  const [scheduledAudits, setScheduledAudits] = useState<ScheduledAudit[]>([]);
+  const [showAddScheduled, setShowAddScheduled] = useState(false);
+  const [newScheduledUrl, setNewScheduledUrl] = useState('');
+  const [newScheduledFrequency, setNewScheduledFrequency] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -62,12 +78,105 @@ export default function SettingsPage() {
         });
         setFullName(data.full_name || '');
         setCompanyName(data.company_name || '');
+
+        // Fetch scheduled audits for Starter/Pro users
+        if (data.subscription_tier !== 'free') {
+          fetchScheduledAudits();
+        }
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
       setMessage({ type: 'error', text: 'Failed to load profile' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchScheduledAudits = async () => {
+    try {
+      const response = await fetch('/api/scheduled-audits');
+      const data = await response.json();
+
+      if (data.success) {
+        setScheduledAudits(data.scheduledAudits);
+      }
+    } catch (error) {
+      console.error('Error fetching scheduled audits:', error);
+    }
+  };
+
+  const handleAddScheduledAudit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch('/api/scheduled-audits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          store_url: newScheduledUrl,
+          frequency: newScheduledFrequency,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to schedule audit');
+      }
+
+      setMessage({ type: 'success', text: data.message });
+      setNewScheduledUrl('');
+      setNewScheduledFrequency('weekly');
+      setShowAddScheduled(false);
+      await fetchScheduledAudits();
+    } catch (error) {
+      setMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Failed to schedule audit',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleToggleScheduledAudit = async (id: string, isActive: boolean) => {
+    try {
+      const response = await fetch('/api/scheduled-audits', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, is_active: !isActive }),
+      });
+
+      if (response.ok) {
+        await fetchScheduledAudits();
+        setMessage({
+          type: 'success',
+          text: `Scheduled audit ${!isActive ? 'activated' : 'paused'}`,
+        });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to update scheduled audit' });
+    }
+  };
+
+  const handleDeleteScheduledAudit = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this scheduled audit?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/scheduled-audits?id=${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        await fetchScheduledAudits();
+        setMessage({ type: 'success', text: 'Scheduled audit deleted' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to delete scheduled audit' });
     }
   };
 
@@ -229,6 +338,156 @@ export default function SettingsPage() {
             </div>
           )}
         </Card>
+
+        {/* Scheduled Audits (Starter & Pro only) */}
+        {(profile.subscription_tier === 'starter' || profile.subscription_tier === 'pro') && (
+          <Card className="mb-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-white mb-1">Scheduled Audits</h2>
+                <p className="text-sm text-gray-400">
+                  Automatically run audits on your stores at regular intervals
+                </p>
+              </div>
+              {!showAddScheduled && (
+                <button
+                  onClick={() => setShowAddScheduled(true)}
+                  className="px-4 py-2 bg-primary hover:bg-primary-light text-white font-semibold rounded-lg transition-colors"
+                >
+                  + Add Schedule
+                </button>
+              )}
+            </div>
+
+            {/* Add New Scheduled Audit Form */}
+            {showAddScheduled && (
+              <form onSubmit={handleAddScheduledAudit} className="mb-6 p-4 bg-gray-700/50 rounded-lg border border-gray-600">
+                <h3 className="font-semibold text-white mb-4">Schedule New Audit</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                      Store URL
+                    </label>
+                    <input
+                      type="url"
+                      value={newScheduledUrl}
+                      onChange={(e) => setNewScheduledUrl(e.target.value)}
+                      placeholder="https://yourstore.myshopify.com"
+                      required
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                      Frequency
+                    </label>
+                    <select
+                      value={newScheduledFrequency}
+                      onChange={(e) => setNewScheduledFrequency(e.target.value as any)}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary"
+                    >
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="px-6 py-2 bg-primary hover:bg-primary-light text-white font-semibold rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {saving ? 'Saving...' : 'Schedule Audit'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddScheduled(false);
+                      setNewScheduledUrl('');
+                      setNewScheduledFrequency('weekly');
+                    }}
+                    className="px-6 py-2 border border-gray-600 text-gray-400 hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-3">
+                  {profile.subscription_tier === 'starter' && 'Starter plan: Up to 3 scheduled audits'}
+                  {profile.subscription_tier === 'pro' && 'Pro plan: Up to 10 scheduled audits'}
+                </p>
+              </form>
+            )}
+
+            {/* Scheduled Audits List */}
+            {scheduledAudits.length === 0 ? (
+              <div className="text-center py-12 bg-gray-700/30 rounded-lg border border-gray-600/50">
+                <div className="text-4xl mb-3">📅</div>
+                <h3 className="text-lg font-semibold text-white mb-2">No Scheduled Audits</h3>
+                <p className="text-gray-400 mb-4">
+                  Set up automatic audits to monitor your stores continuously
+                </p>
+                {!showAddScheduled && (
+                  <button
+                    onClick={() => setShowAddScheduled(true)}
+                    className="px-6 py-3 bg-primary hover:bg-primary-light text-white font-semibold rounded-lg transition-colors"
+                  >
+                    Schedule Your First Audit
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {scheduledAudits.map((audit) => (
+                  <div
+                    key={audit.id}
+                    className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg border border-gray-600"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <h4 className="font-semibold text-white">{audit.store_url}</h4>
+                        <Badge
+                          variant={audit.is_active ? 'success' : 'warning'}
+                          size="sm"
+                        >
+                          {audit.is_active ? 'Active' : 'Paused'}
+                        </Badge>
+                        <Badge variant="info" size="sm">
+                          {audit.frequency.charAt(0).toUpperCase() + audit.frequency.slice(1)}
+                        </Badge>
+                      </div>
+                      <div className="text-sm text-gray-400">
+                        {audit.last_run_at ? (
+                          <>Last run: {new Date(audit.last_run_at).toLocaleDateString()}</>
+                        ) : (
+                          <>Never run yet</>
+                        )}
+                        {' • '}
+                        Next run: {new Date(audit.next_run_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleToggleScheduledAudit(audit.id, audit.is_active)}
+                        className="px-3 py-2 text-sm border border-gray-600 text-gray-300 hover:bg-gray-700 rounded transition-colors"
+                        title={audit.is_active ? 'Pause' : 'Activate'}
+                      >
+                        {audit.is_active ? '⏸️ Pause' : '▶️ Activate'}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteScheduledAudit(audit.id)}
+                        className="px-3 py-2 text-sm border border-red-600 text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                        title="Delete"
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
 
         {/* Profile Information */}
         <Card>
